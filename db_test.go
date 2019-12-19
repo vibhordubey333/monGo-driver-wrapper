@@ -152,7 +152,7 @@ func TestInsert(t *testing.T) {
 		assertError(t, err, m.ErrNoDocuments)
 
 		john := Doc{"john", "smith"}
-		err, _ = TestCollection.InsertOne(john)
+		_, err = TestCollection.InsertOne(john)
 		assertNoError(t, err)
 
 		// make sure john exists now
@@ -165,7 +165,7 @@ func TestInsert(t *testing.T) {
 		john := Doc{"alex", "smith"}
 		betty := Doc{"alex", "hansen"}
 		sl := []interface{}{john, betty}
-		err, _ := TestCollection.InsertMany(sl)
+		_, err := TestCollection.InsertMany(sl)
 		assertNoError(t, err)
 
 		filter := bson.D{{"name", "alex"}}
@@ -182,7 +182,7 @@ func TestInsert(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	t.Run("update single doc set existing field", func(t *testing.T) {
 		rebecca := Doc{"rebecca", "joe"}
-		err, _ := TestCollection.InsertOne(rebecca)
+		_, err := TestCollection.InsertOne(rebecca)
 		assertNoError(t, err)
 
 		filter := bson.D{{"name", "rebecca"}, {"surname", "o'connor"}}
@@ -192,7 +192,7 @@ func TestUpdate(t *testing.T) {
 
 		updateFilter := bson.D{{"name", "rebecca"}}
 		update := bson.D{{"$set", bson.D{{"surname", "o'connor"}}}}
-		err, match, mod := TestCollection.UpdateOne(updateFilter, update)
+		match, mod, err := TestCollection.UpdateOne(updateFilter, update)
 		assertMatchMod(t, match, mod, 1, 1)
 		assertNoError(t, err)
 
@@ -202,7 +202,7 @@ func TestUpdate(t *testing.T) {
 
 	t.Run("update single doc set nonexistant field", func(t *testing.T) {
 		kevin := Doc{"kevin", "kwon"}
-		err, _ := TestCollection.InsertOne(kevin)
+		_, err := TestCollection.InsertOne(kevin)
 		assertNoError(t, err)
 
 		filter := bson.D{{"age", 24}}
@@ -212,7 +212,7 @@ func TestUpdate(t *testing.T) {
 
 		updateFilter := bson.D{{"name", "kevin"}, {"surname", "kwon"}}
 		update := bson.D{{"$set", bson.D{{"age", 24}}}}
-		err, match, mod := TestCollection.UpdateOne(updateFilter, update)
+		match, mod, err := TestCollection.UpdateOne(updateFilter, update)
 		assertMatchMod(t, match, mod, 1, 1)
 		assertNoError(t, err)
 
@@ -224,12 +224,12 @@ func TestUpdate(t *testing.T) {
 		jessica := Doc{"jessica", "wu"}
 		sherry := Doc{"sherry", "wu"}
 		sl := []interface{}{jessica, sherry}
-		err, _ := TestCollection.InsertMany(sl)
+		_, err := TestCollection.InsertMany(sl)
 		assertNoError(t, err)
 
 		updateFilter := bson.D{{"surname", "wu"}}
 		update := bson.D{{"$set", bson.D{{"surname", "o'connor"}}}}
-		err, match, mod := TestCollection.UpdateOne(updateFilter, update)
+		match, mod, err := TestCollection.UpdateOne(updateFilter, update)
 		assertMatchMod(t, match, mod, 1, 1)
 		assertNoError(t, err)
 	})
@@ -238,12 +238,12 @@ func TestUpdate(t *testing.T) {
 		clement := Doc{"clement", "hii"}
 		john := Doc{"john", "hii"}
 		sl := []interface{}{clement, john}
-		err, _ := TestCollection.InsertMany(sl)
+		_, err := TestCollection.InsertMany(sl)
 		assertNoError(t, err)
 
 		updateFilter := bson.D{{"surname", "hii"}}
 		update := bson.D{{"$set", bson.D{{"surname", "young"}}}}
-		err, match, mod := TestCollection.UpdateMany(updateFilter, update)
+		match, mod, err := TestCollection.UpdateMany(updateFilter, update)
 		assertMatchMod(t, match, mod, 2, 2)
 		assertNoError(t, err)
 	})
@@ -252,12 +252,12 @@ func TestUpdate(t *testing.T) {
 		clement := Doc{"sebastian", "chan"}
 		john := Doc{"sebastian", "wang"}
 		sl := []interface{}{clement, john}
-		err, _ := TestCollection.InsertMany(sl)
+		_, err := TestCollection.InsertMany(sl)
 		assertNoError(t, err)
 
 		updateFilter := bson.D{{"likesPeanuts", true}}
 		update := bson.D{{"$set", bson.D{{"name", "seb"}}}}
-		err, match, mod := TestCollection.UpdateMany(updateFilter, update)
+		match, mod, err := TestCollection.UpdateMany(updateFilter, update)
 		assertMatchMod(t, match, mod, 0, 0)
 		assertNoError(t, err)
 	})
@@ -266,7 +266,7 @@ func TestUpdate(t *testing.T) {
 func TestDelete(t *testing.T) {
 	t.Run("Delete single valid document", func(t *testing.T) {
 		albert := Doc{"albert", "yip"}
-		err, _ := TestCollection.InsertOne(albert)
+		_, err := TestCollection.InsertOne(albert)
 		filter := bson.D{{"name", "albert"}, {"surname", "yip"}}
 		assertNoError(t, err)
 
@@ -286,7 +286,7 @@ func TestDelete(t *testing.T) {
 		nick := Doc{"nick", "zheng"}
 		stephen := Doc{"stephen", "zheng"}
 		sl := []interface{}{nick, stephen}
-		err, _ := TestCollection.InsertMany(sl)
+		_, err := TestCollection.InsertMany(sl)
 		assertNoError(t, err)
 
 		filter := bson.D{{"surname", "zheng"}}

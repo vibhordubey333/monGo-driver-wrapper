@@ -1,4 +1,4 @@
-// package db provides helper functions that make interfacing with the MongoDB Go driver library easier
+// Package db provides helper functions that make interfacing with the MongoDB Go driver library easier
 package db
 
 import (
@@ -92,48 +92,48 @@ func (db CnctConnection) FindMany(filter bson.D, res *[]interface{}) error {
 }
 
 // UpdateOne updates single document matching filter and applies update to it. Returns number of documents matched and modified. Should always be either 0 or 1.
-func (db CnctConnection) UpdateOne(filter, update bson.D) (error, int64, int64) {
+func (db CnctConnection) UpdateOne(filter, update bson.D) (int64, int64, error) {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 
 	updateRes, err := db.Collection.UpdateOne(Ctx, filter, update)
 	if err != nil {
-		return err, 0, 0
+		return 0, 0, err
 	}
-	return nil, updateRes.MatchedCount, updateRes.ModifiedCount
+	return updateRes.MatchedCount, updateRes.ModifiedCount, nil
 }
 
 // UpdateMany updates all documents matching the filter by applying the update query on it. Returns number of documents matched and modified.
-func (db CnctConnection) UpdateMany(filter, update bson.D) (error, int64, int64) {
+func (db CnctConnection) UpdateMany(filter, update bson.D) (int64, int64, error) {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 
 	updateRes, err := db.Collection.UpdateMany(Ctx, filter, update)
 	if err != nil {
-		return err, 0, 0
+		return 0, 0, err
 	}
-	return nil, updateRes.MatchedCount, updateRes.ModifiedCount
+	return updateRes.MatchedCount, updateRes.ModifiedCount, nil
 }
 
 // InsertOne inserts a single struct as a document into the database and returns its ID.
 // Returns inserted ID
-func (db CnctConnection) InsertOne(new interface{}) (error, interface{}) {
+func (db CnctConnection) InsertOne(new interface{}) (interface{}, error) {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 
 	insertRes, err := db.Collection.InsertOne(Ctx, new)
 	if err != nil {
-		return err, ""
+		return "", err
 	}
-	return nil, insertRes.InsertedID
+	return insertRes.InsertedID, nil
 }
 
 // InsertMany takes a slice of structs, inserts them into the database, and returns list of inserted IDs
-func (db CnctConnection) InsertMany(new []interface{}) (error, interface{}) {
+func (db CnctConnection) InsertMany(new []interface{}) (interface{}, error) {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 
 	insertRes, err := db.Collection.InsertMany(Ctx, new)
 	if err != nil {
-		return err, ""
+		return "", err
 	}
-	return nil, insertRes.InsertedIDs
+	return insertRes.InsertedIDs, nil
 }
 
 // DeleteOne deletes single document that match the bson.D filter
