@@ -1,15 +1,10 @@
-[![GoDoc](https://godoc.org/github.com/jackyzha0/go-auth-w-mongo?status.svg)](https://godoc.org/github.com/jackyzha0/go-auth-w-mongo)
-[![GoReportCard](https://goreportcard.com/badge/github.com/jackyzha0/go-auth-w-mongo)](https://goreportcard.com/report/github.com/jackyzha0/go-auth-w-mongo)
-# Go Auth App
-### Simple session based authentication with Mux and MongoDB
+[![GoDoc](https://godoc.org/github.com/jackyzha0/monGo-driver-wrapper?status.svg)](https://godoc.org/github.com/jackyzha0/monGo-driver-wrapper)
+[![GoReportCard](https://goreportcard.com/badge/github.com/jackyzha0/monGo-driver-wrapper)](https://goreportcard.com/report/github.com/jackyzha0/monGo-driver-wrapper)
+# MongoDB Go Driver Wrapper
+This package reduces boilerplate when using MongoDB by handling contexts and cursor iteration for you.
 
-This repository was created as an exercise in Go development. The following routes have been implemented:
+## Install
+Use the package by running `go get -u github.com/jackyzha0/monGo-driver-wrapper/`
 
-```go
-/register "register a new user"
-/login "creates a token if user is registered"
-/dashboard "simple dashboard to display user's name"
-/dbhealthcheck "checks if connection to MongoDB is healthy"
-```
-
-You can build the binary by running `go build -o server` and run it via `./server` Run the sanity check tests by doing `go test`
+## Testing / Development
+Ensure that you have a `mongod` instance running locally on your machine. Run the sanity check tests by doing `go test -v`. This will create a new Database called `exampleDB` and collection named `test` which it will delete after.
