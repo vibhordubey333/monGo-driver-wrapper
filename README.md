@@ -3,6 +3,7 @@
 # MongoDB Go Driver Wrapper
 This package reduces boilerplate when using MongoDB by handling contexts and cursor iteration for you.
 
+
 ## Install
 Use the package by running `go get -u github.com/jackyzha0/monGo-driver-wrapper/` and adding the import to the top of your file
 
