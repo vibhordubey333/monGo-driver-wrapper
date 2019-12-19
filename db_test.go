@@ -74,7 +74,7 @@ func assertError(t *testing.T, got error, want error) {
 }
 
 func TestMain(m *testing.M) {
-	TestCollection = New("exampleDB", "test")
+	TestCollection = New("mongodb://localhost:27017", "exampleDB", "test")
 	// setup, add two docs
 	bob := Doc{"bob", "joe"}
 	sally := Doc{"sally", "joe"}

@@ -12,9 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// URI for MongoDB instance
-const DBuri = "mongodb://localhost:27017"
-
 // Create Context
 var Ctx context.Context
 
@@ -29,16 +26,10 @@ type CnctConnection struct {
 }
 
 // Function to create new connection to Mongo Collection
-func New(db, cnct string) (c CnctConnection) {
-	c.Collection = Client.Database(db).Collection(cnct)
-	return c
-}
-
-// Initialize connection to DB, set package wide Ctx and Client
-func init() {
-	log.Printf("Attempting to connect to %q", DBuri)
+func New(uri, db, cnct string) (c CnctConnection) {
+	log.Printf("Attempting to connect to %q", uri)
 	conn, _ := context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
-	clt, err := mongo.Connect(Ctx, options.Client().ApplyURI(DBuri))
+	clt, err := mongo.Connect(Ctx, options.Client().ApplyURI(uri))
 
 	if err != nil {
 		log.Panic(err)
@@ -48,6 +39,9 @@ func init() {
 	// Change Package level vars
 	Ctx = conn
 	Client = clt
+
+	c.Collection = Client.Database(db).Collection(cnct)
+	return c
 }
 
 func (db CnctConnection) Drop() (err error) {
