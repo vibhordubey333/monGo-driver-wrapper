@@ -222,7 +222,9 @@ func TestUpdate(t *testing.T) {
 
 	t.Run("update single doc multiple matches", func(t *testing.T) {
 		jessica := Doc{"jessica", "wu"}
-		err := TestCollection.InsertOne(jessica)
+		sherry := Doc{"sherry", "wu"}
+		sl := []interface{}{jessica, sherry}
+		err := TestCollection.InsertMany(sl)
 		assertNoError(t, err)
 
 		update_filter := bson.D{{"surname", "wu"}}
@@ -233,11 +235,31 @@ func TestUpdate(t *testing.T) {
 	})
 
 	t.Run("update multiples docs set existing field", func(t *testing.T) {
+		clement := Doc{"clement", "hii"}
+		john := Doc{"john", "hii"}
+		sl := []interface{}{clement, john}
+		err := TestCollection.InsertMany(sl)
+		assertNoError(t, err)
 
+		update_filter := bson.D{{"surname", "hii"}}
+		update := bson.D{{"$set", bson.D{{"surname", "young"}}}}
+		err, match, mod := TestCollection.UpdateMany(update_filter, update)
+		assertMatchMod(t, match, mod, 2, 2)
+		assertNoError(t, err)
 	})
 
 	t.Run("update multiple docs set nonexistant field", func(t *testing.T) {
+		clement := Doc{"sebastian", "chan"}
+		john := Doc{"sebastian", "wang"}
+		sl := []interface{}{clement, john}
+		err := TestCollection.InsertMany(sl)
+		assertNoError(t, err)
 
+		update_filter := bson.D{{"likesPeanuts", true}}
+		update := bson.D{{"$set", bson.D{{"name", "seb"}}}}
+		err, match, mod := TestCollection.UpdateMany(update_filter, update)
+		assertMatchMod(t, match, mod, 0, 0)
+		assertNoError(t, err)
 	})
 }
 

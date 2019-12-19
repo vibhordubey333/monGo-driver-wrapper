@@ -59,6 +59,8 @@ func (db CnctConnection) AbstractOne(filter, update bson.D, res, new interface{}
 		err = db.Collection.FindOne(Ctx, filter).Decode(res)
 	case 1: // Update
 		updateRes, err = db.Collection.UpdateOne(Ctx, filter, update)
+	case 2: // UpdateMany
+		updateRes, err = db.Collection.UpdateMany(Ctx, filter, update)
 	}
 
 	// failed to unmarshall
@@ -109,16 +111,9 @@ func (db CnctConnection) UpdateOne(filter, update bson.D) (err error, matchCount
 }
 
 // Simplification of collection.Update() except it doesn't return a cursor
-func (db CnctConnection) UpdateMany(filter, update bson.D) (err error) {
-	// Set context
-	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
-
-	_, err = db.Collection.UpdateMany(Ctx, filter, update)
-
-	if err != nil {
-		return err
-	}
-	return nil
+func (db CnctConnection) UpdateMany(filter, update bson.D) (err error, matchCount, modifiedCount int64) {
+	err, updateres := db.AbstractOne(filter, update, nil, nil, 2)
+	return err, updateres.MatchedCount, updateres.ModifiedCount
 }
 
 // Simplification of InsertOne, doesn't return document and accepts arbitrary structs
