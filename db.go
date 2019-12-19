@@ -1,4 +1,4 @@
-// Provides helper functions that make interfacing with the MongoDB Go driver library easier
+// package db provides helper functions that make interfacing with the MongoDB Go driver library easier
 package db
 
 import (
@@ -12,21 +12,21 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Create Context
+// Ctx holds the current context
 var Ctx context.Context
 
-// Create MongoDB client
+// Client holds the reference to the underlying MongoDB client
 var Client *mongo.Client
 
-// Timeout limit for context before cancelling
+// OperationTimeOut is the time limit for context before cancelling
 const OperationTimeOut = 5
 
-// Wrapper for Mongo Collection
+// CnctConnection is the wrapper for Mongo Collection
 type CnctConnection struct {
 	Collection *mongo.Collection
 }
 
-// Function to create new connection to Mongo Collection
+// New creates a new connection to Mongo Collection
 func New(uri, db, cnct string) (c CnctConnection) {
 	log.Printf("Attempting to connect to %q", uri)
 	conn, _ := context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
@@ -45,14 +45,14 @@ func New(uri, db, cnct string) (c CnctConnection) {
 	return c
 }
 
-// Wrapper for collection.Drop()
+// Drop drops the current CnctConnection (collection)
 func (db CnctConnection) Drop() error {
 	// Set context
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 	return db.Collection.Drop(Ctx)
 }
 
-// Wrapper for collection.FindOne(). Finds first document that satisfies filter and fills res with the unmarshalled document.
+// FindOne finds first document that satisfies filter and fills res with the unmarshalled document.
 func (db CnctConnection) FindOne(filter bson.D, res interface{}) error {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 
@@ -63,7 +63,7 @@ func (db CnctConnection) FindOne(filter bson.D, res interface{}) error {
 	return nil
 }
 
-// Wrapper for collection.Find(). Iterates cursor and fills res with unmarshalled documents.
+// FindMany iterates cursor of all docs matching filter and fills res with unmarshalled documents.
 func (db CnctConnection) FindMany(filter bson.D, res *[]interface{}) error {
 	arrtype := reflect.TypeOf(res).Elem()
 
@@ -91,7 +91,7 @@ func (db CnctConnection) FindMany(filter bson.D, res *[]interface{}) error {
 	return nil
 }
 
-// Wrapper for collection.UpdateOne(). Returns number of documents matched and modified. Should always be either 0 or 1.
+// UpdateOne updates single document matching filter and applies update to it. Returns number of documents matched and modified. Should always be either 0 or 1.
 func (db CnctConnection) UpdateOne(filter, update bson.D) (error, int64, int64) {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 
@@ -102,7 +102,7 @@ func (db CnctConnection) UpdateOne(filter, update bson.D) (error, int64, int64) 
 	return nil, updateRes.MatchedCount, updateRes.ModifiedCount
 }
 
-// Wrapper for collection.UpdateMany(). Returns number of documents matched and modified.
+// UpdateMany updates all documents matching the filter by applying the update query on it. Returns number of documents matched and modified.
 func (db CnctConnection) UpdateMany(filter, update bson.D) (error, int64, int64) {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 
@@ -113,7 +113,7 @@ func (db CnctConnection) UpdateMany(filter, update bson.D) (error, int64, int64)
 	return nil, updateRes.MatchedCount, updateRes.ModifiedCount
 }
 
-// Wrapper for collection.InsertOne(), doesn't return document and accepts arbitrary structs.
+// InsertOne inserts a single struct as a document into the database and returns its ID.
 // Returns inserted ID
 func (db CnctConnection) InsertOne(new interface{}) (error, interface{}) {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
@@ -125,8 +125,7 @@ func (db CnctConnection) InsertOne(new interface{}) (error, interface{}) {
 	return nil, insertRes.InsertedID
 }
 
-// Wrapper for collection.InsertMany(), takes slice of structs to insert.
-// Returns list of inserted IDs
+// InsertMany takes a slice of structs, inserts them into the database, and returns list of inserted IDs
 func (db CnctConnection) InsertMany(new []interface{}) (error, interface{}) {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 
@@ -137,7 +136,7 @@ func (db CnctConnection) InsertMany(new []interface{}) (error, interface{}) {
 	return nil, insertRes.InsertedIDs
 }
 
-// Wrapper for collection.DeleteOne(). Deletes single document that match the bson.D filter
+// DeleteOne deletes single document that match the bson.D filter
 func (db CnctConnection) DeleteOne(filter bson.D) error {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 	_, err := db.Collection.DeleteOne(Ctx, filter)
@@ -147,7 +146,7 @@ func (db CnctConnection) DeleteOne(filter bson.D) error {
 	return nil
 }
 
-// Wrapper for collection.DeleteMany(). Deletes all documents that match the bson.D filter
+// DeleteMany deletes all documents that match the bson.D filter
 func (db CnctConnection) DeleteMany(filter bson.D) error {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 	_, err := db.Collection.DeleteMany(Ctx, filter)

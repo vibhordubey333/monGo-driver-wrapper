@@ -190,9 +190,9 @@ func TestUpdate(t *testing.T) {
 		err = TestCollection.FindOne(filter, &res)
 		assertError(t, err, m.ErrNoDocuments)
 
-		update_filter := bson.D{{"name", "rebecca"}}
+		updateFilter := bson.D{{"name", "rebecca"}}
 		update := bson.D{{"$set", bson.D{{"surname", "o'connor"}}}}
-		err, match, mod := TestCollection.UpdateOne(update_filter, update)
+		err, match, mod := TestCollection.UpdateOne(updateFilter, update)
 		assertMatchMod(t, match, mod, 1, 1)
 		assertNoError(t, err)
 
@@ -210,9 +210,9 @@ func TestUpdate(t *testing.T) {
 		err = TestCollection.FindOne(filter, &res)
 		assertError(t, err, m.ErrNoDocuments)
 
-		update_filter := bson.D{{"name", "kevin"}, {"surname", "kwon"}}
+		updateFilter := bson.D{{"name", "kevin"}, {"surname", "kwon"}}
 		update := bson.D{{"$set", bson.D{{"age", 24}}}}
-		err, match, mod := TestCollection.UpdateOne(update_filter, update)
+		err, match, mod := TestCollection.UpdateOne(updateFilter, update)
 		assertMatchMod(t, match, mod, 1, 1)
 		assertNoError(t, err)
 
@@ -227,9 +227,9 @@ func TestUpdate(t *testing.T) {
 		err, _ := TestCollection.InsertMany(sl)
 		assertNoError(t, err)
 
-		update_filter := bson.D{{"surname", "wu"}}
+		updateFilter := bson.D{{"surname", "wu"}}
 		update := bson.D{{"$set", bson.D{{"surname", "o'connor"}}}}
-		err, match, mod := TestCollection.UpdateOne(update_filter, update)
+		err, match, mod := TestCollection.UpdateOne(updateFilter, update)
 		assertMatchMod(t, match, mod, 1, 1)
 		assertNoError(t, err)
 	})
@@ -241,9 +241,9 @@ func TestUpdate(t *testing.T) {
 		err, _ := TestCollection.InsertMany(sl)
 		assertNoError(t, err)
 
-		update_filter := bson.D{{"surname", "hii"}}
+		updateFilter := bson.D{{"surname", "hii"}}
 		update := bson.D{{"$set", bson.D{{"surname", "young"}}}}
-		err, match, mod := TestCollection.UpdateMany(update_filter, update)
+		err, match, mod := TestCollection.UpdateMany(updateFilter, update)
 		assertMatchMod(t, match, mod, 2, 2)
 		assertNoError(t, err)
 	})
@@ -255,9 +255,9 @@ func TestUpdate(t *testing.T) {
 		err, _ := TestCollection.InsertMany(sl)
 		assertNoError(t, err)
 
-		update_filter := bson.D{{"likesPeanuts", true}}
+		updateFilter := bson.D{{"likesPeanuts", true}}
 		update := bson.D{{"$set", bson.D{{"name", "seb"}}}}
-		err, match, mod := TestCollection.UpdateMany(update_filter, update)
+		err, match, mod := TestCollection.UpdateMany(updateFilter, update)
 		assertMatchMod(t, match, mod, 0, 0)
 		assertNoError(t, err)
 	})
