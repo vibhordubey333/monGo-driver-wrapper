@@ -18,6 +18,7 @@ var Ctx context.Context
 // Create MongoDB client
 var Client *mongo.Client
 
+// Timeout limit for context before cancelling
 const OperationTimeOut = 5
 
 // Wrapper for Mongo Collection
@@ -44,40 +45,26 @@ func New(uri, db, cnct string) (c CnctConnection) {
 	return c
 }
 
-func (db CnctConnection) Drop() (err error) {
+// Wrapper for collection.Drop()
+func (db CnctConnection) Drop() error {
 	// Set context
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 	return db.Collection.Drop(Ctx)
 }
 
-func (db CnctConnection) AbstractOne(filter, update bson.D, res, new interface{}, t int) (err error, updateRes *mongo.UpdateResult) {
-	// Set context
+// Wrapper for collection.FindOne(). Finds first document that satisfies filter and fills res with the unmarshalled document.
+func (db CnctConnection) FindOne(filter bson.D, res interface{}) error {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 
-	switch t {
-	case 0: // Find
-		err = db.Collection.FindOne(Ctx, filter).Decode(res)
-	case 1: // Update
-		updateRes, err = db.Collection.UpdateOne(Ctx, filter, update)
-	case 2: // UpdateMany
-		updateRes, err = db.Collection.UpdateMany(Ctx, filter, update)
-	}
-
-	// failed to unmarshall
+	err := db.Collection.FindOne(Ctx, filter).Decode(res)
 	if err != nil {
-		return err, &mongo.UpdateResult{}
+		return err
 	}
-
-	return nil, updateRes
+	return nil
 }
 
-func (db CnctConnection) FindOne(filter bson.D, res interface{}) (err error) {
-	err, _ = db.AbstractOne(filter, nil, res, nil, 0)
-	return err
-}
-
-// Simplification of collection.Find()
-func (db CnctConnection) FindMany(filter bson.D, res *[]interface{}) (err error) {
+// Wrapper for collection.Find(). Iterates cursor and fills res with unmarshalled documents.
+func (db CnctConnection) FindMany(filter bson.D, res *[]interface{}) error {
 	arrtype := reflect.TypeOf(res).Elem()
 
 	// Set context
@@ -104,58 +91,66 @@ func (db CnctConnection) FindMany(filter bson.D, res *[]interface{}) (err error)
 	return nil
 }
 
-// add note about always returning one match and one modification
-func (db CnctConnection) UpdateOne(filter, update bson.D) (err error, matchCount, modifiedCount int64) {
-	err, updateres := db.AbstractOne(filter, update, nil, nil, 1)
-	return err, updateres.MatchedCount, updateres.ModifiedCount
-}
-
-// Simplification of collection.Update() except it doesn't return a cursor
-func (db CnctConnection) UpdateMany(filter, update bson.D) (err error, matchCount, modifiedCount int64) {
-	err, updateres := db.AbstractOne(filter, update, nil, nil, 2)
-	return err, updateres.MatchedCount, updateres.ModifiedCount
-}
-
-// Simplification of InsertOne, doesn't return document and accepts arbitrary structs
-func (db CnctConnection) InsertOne(str interface{}) (err error) {
-	// Set context
+// Wrapper for collection.UpdateOne(). Returns number of documents matched and modified. Should always be either 0 or 1.
+func (db CnctConnection) UpdateOne(filter, update bson.D) (error, int64, int64) {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
 
-	_, err = db.Collection.InsertOne(Ctx, str)
+	updateRes, err := db.Collection.UpdateOne(Ctx, filter, update)
+	if err != nil {
+		return err, 0, 0
+	}
+	return nil, updateRes.MatchedCount, updateRes.ModifiedCount
+}
+
+// Wrapper for collection.UpdateMany(). Returns number of documents matched and modified.
+func (db CnctConnection) UpdateMany(filter, update bson.D) (error, int64, int64) {
+	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
+
+	updateRes, err := db.Collection.UpdateMany(Ctx, filter, update)
+	if err != nil {
+		return err, 0, 0
+	}
+	return nil, updateRes.MatchedCount, updateRes.ModifiedCount
+}
+
+// Wrapper for collection.InsertOne(), doesn't return document and accepts arbitrary structs.
+// Returns inserted ID
+func (db CnctConnection) InsertOne(new interface{}) (error, interface{}) {
+	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
+
+	insertRes, err := db.Collection.InsertOne(Ctx, new)
+	if err != nil {
+		return err, ""
+	}
+	return nil, insertRes.InsertedID
+}
+
+// Wrapper for collection.InsertMany(), takes slice of structs to insert.
+// Returns list of inserted IDs
+func (db CnctConnection) InsertMany(new []interface{}) (error, interface{}) {
+	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
+
+	insertRes, err := db.Collection.InsertMany(Ctx, new)
+	if err != nil {
+		return err, ""
+	}
+	return nil, insertRes.InsertedIDs
+}
+
+// Wrapper for collection.DeleteOne(). Deletes single document that match the bson.D filter
+func (db CnctConnection) DeleteOne(filter bson.D) error {
+	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
+	_, err := db.Collection.DeleteOne(Ctx, filter)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// Simplification of InsertMany, takes slice of structs
-func (db CnctConnection) InsertMany(str []interface{}) (err error) {
-	// Set context
+// Wrapper for collection.DeleteMany(). Deletes all documents that match the bson.D filter
+func (db CnctConnection) DeleteMany(filter bson.D) error {
 	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
-
-	_, err = db.Collection.InsertMany(Ctx, str)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// Wrapper for collection.DeleteOne()
-func (db CnctConnection) DeleteOne(filter bson.D) (err error) {
-	// Set context
-	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
-	_, err = db.Collection.DeleteOne(Ctx, filter)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// Wrapper for collection.DeleteMany()
-func (db CnctConnection) DeleteMany(filter bson.D) (err error) {
-	// Set context
-	Ctx, _ = context.WithTimeout(context.Background(), OperationTimeOut*time.Second)
-	_, err = db.Collection.DeleteMany(Ctx, filter)
+	_, err := db.Collection.DeleteMany(Ctx, filter)
 	if err != nil {
 		return err
 	}
